@@ -20,11 +20,6 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 import wave, random
 import os
 
-#import os, urllib2, string, re, htmlentitydefs, time, unicodedata
-#from xml.sax.saxutils import unescape
-#from xml.dom import minidom
-#from urllib import quote_plus
-
 __XBMC_Revision__ = xbmc.getInfoLabel('System.BuildVersion')
 __settings__      = xbmcaddon.Addon(id='plugin.audio.mozart')
 __language__      = __settings__.getLocalizedString
@@ -37,11 +32,14 @@ __author__      = "Assen Totin <assen.totin@gmail.com>"
 BASE_URL = 'ftp://ftp.cs.princeton.edu/pub/cs126/mozart/mozart.jar'
 TMP_FILE_NAME = 'mozart.jar'
 
+CHUNK_SIZE = 1048576
+
 OUTPUT_FILENAME = "waltz.wav"
 
 # Obtain the full path of "userdata/add_ons" directory
 def getUserdataDir():
   path = xbmc.translatePath(__settings__.getAddonInfo('profile'))
+  res = 0
   if not os.path.exists(path):
     res = getWavFiles(path)
   if res == -1: return "OOPS"
@@ -51,27 +49,45 @@ def getUserdataDir():
 def getWavFiles(path):
   import zipfile, time, urllib2
 
-  dialog = xbmcgui.DialogProgress()
-  dialog.create(__language__(30090), __language__(30091))
-  dialog.update(10)
-
-  req = urllib2.Request(BASE_URL)
-  response = urllib2.urlopen(req)
-  zipdata = response.read()
-  response.close()
-
   os.makedirs(path)
   tmp_file_name = os.path.join(path,TMP_FILE_NAME)
-
   f = open(tmp_file_name,'wb')
-  f.write(zipdata)
+
+  # Create a dialog
+  dialog_was_canceled = 0
+  dialog = xbmcgui.DialogProgress()
+  dialog.create(__language__(30090), __language__(30091))
+  dialog.update(1)
+
+  # Download in chunks of CHUNK_SIZE, update the dialog
+  # URL progress bar code taken from triptych (http://stackoverflow.com/users/43089/triptych):
+  # See original code http://stackoverflow.com/questions/2028517/python-urllib2-progress-hook
+  response = urllib2.urlopen(BASE_URL);
+  total_size = response.info().getheader('Content-Length').strip()
+  total_size = int(total_size)
+  bytes_so_far = 0
+
+  while 1:
+    chunk = response.read(CHUNK_SIZE)
+    bytes_so_far += len(chunk)
+
+    if not chunk: break
+
+    if (dialog.iscanceled()): 
+      dialog_was_canceled = 1
+      break
+
+    f.write(chunk)
+    percent = float(bytes_so_far) / total_size
+    val = int(percent * 100)
+    if (val >= 96): val = 96
+    dialog.update(val)
+
+  response.close()
   f.close()
 
-  if dialog.iscanceled(): dialog_was_canceled = 1
-  else: dialog_was_canceled = 0
-
   if dialog_was_canceled == 0:
-    dialog.update(50, __language__(30092))
+    dialog.update(98, __language__(30092))
 
     myzip = zipfile.ZipFile(tmp_file_name,'r')
     myzip.extractall(path)
@@ -81,6 +97,7 @@ def getWavFiles(path):
     time.sleep(1)
     dialog.close()
 
+    # Check if dialog was canceled during unzipping
     if (dialog.iscanceled()): dialog_was_canceled = 1
 
   # If the dialog was canceled, remove the directory and files, then exit
