@@ -90,7 +90,26 @@ def getWavFiles(path):
     dialog.update(98, __language__(30092))
 
     myzip = zipfile.ZipFile(tmp_file_name,'r')
-    myzip.extractall(path)
+
+    # Extract. On Python 2.6 and beterer, use the nice and cosy "extractall()" method
+    try: myzip.extractall(path)
+    except:
+      # On older Python versions (incl. current PPA builds of XBMC 10.0 for Ubuntu)!, there is no reasonable support for extracting ZIP files, only for creating ones (WTF?!)
+      # So, use Doug Tolton's idea from http://code.activestate.com/recipes/252508-file-unzip/
+      myzip_dirs = []
+      for dir_name in myzip.namelist():
+        if dir_name.endswith('/'): myzip_dirs.append(dir_name)
+        myzip_dirs.sort()
+      for new_dir in myzip_dirs:
+        curdir = os.path.join(path, new_dir)
+        if not os.path.exists(curdir): os.mkdir(curdir)
+      for compressed_file_name in myzip.namelist():
+        if not compressed_file_name.endswith('/'):
+          output_file = open(os.path.join(path, compressed_file_name), 'wb')
+          output_file.write(myzip.read(compressed_file_name))
+          output_file.flush()
+          output_file.close()
+
     os.remove(tmp_file_name)
 
     dialog.update(100, __language__(30093))
