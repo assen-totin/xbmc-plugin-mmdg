@@ -228,15 +228,32 @@ if wav_files_dir != 'OOPS':
   outfile = os.path.join(wav_files_dir,OUTPUT_FILENAME)
 
   data= []
+  wav_frames_total = 0
+
   for infile in infiles:
+    log_notice(infile)
     w = wave.open(infile, 'rb')
+    wav_frames_total += w.getnframes()
     data.append( [w.getparams(), w.readframes(w.getnframes())] )
     w.close()
 
   output = wave.open(outfile, 'wb')
+  log_notice(data[0][0])
   output.setparams(data[0][0])
+
+  # On older (buggy?) Python versions like XBMC's built-in 2.4 .writeframes() seems not to update nframes for the WAV header and the resulting output file is a truncated mess.
+  # Therefore, force the nframes for the header and only write raw data. 
+  #
+  # To give developers even more fun, trying to manually build the full header on python 2.4 is an epic fail:
+  # - when you read the docs for wave module (python 2.4 and all next versions) it says .setcomptype() takes 2 parameters;
+  # - when you call .readcomptype() you get a list of two elements;
+  # - when you feed this list to .setcomptype(), it raises an error that it takes "exactly 3 parameters"!
+  #
+  # On a modern Python version, just skip the .setnframes() and in the loop, call .writeframes() instead of .writeframesraw()
+  output.setnframes(wav_frames_total)
+
   for i in range(0, 32):
-    output.writeframes(data[i][1])
+    output.writeframesraw(data[i][1])
   output.close()
 
   listen_url = outfile
