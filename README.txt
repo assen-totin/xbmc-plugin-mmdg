@@ -10,6 +10,7 @@ Original score and tables of combination: Wolfgang Amadeus Mozart (1756-1791)
 
 WAV files found at Princeton University's public FTP, ftp://ftp.cs.princeton.edu/pub/cs126/mozart/mozart.jar 
 
+MIDI files taken from Steven Goodwin's midilib (http://www.bluedust.dontexist.com/midilib)
 
 INSTALL
 
