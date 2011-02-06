@@ -33,6 +33,7 @@ BASE_URL = 'ftp://ftp.cs.princeton.edu/pub/cs126/mozart/mozart.jar'
 WAV_ZIP_FILENAME = 'mozart.jar'
 DIR_RESOURCES = "resources"
 DIR_FILES = "files"
+DIR_LIB = "lib"
 MIDI_ZIP_FILENAME = "midi.zip"
 
 CHUNK_SIZE = 1048576
@@ -197,7 +198,7 @@ def getWavFiles(path):
 def getMidiFiles(path):
   import shutil
   zip_file_name = getMidiZipFileName()
-  shutil.copyfile(zip_file_name, path)
+  shutil.copy(zip_file_name, path)
   return 0
 
 # Roll all dice, return list of pieces
@@ -335,13 +336,18 @@ def buildFileWav(infiles, files_dir):
 
 # Concat all MIDI files into one single MIDI file
 def buildFileMidi(infiles, files_dir):
+  path = xbmc.translatePath(__settings__.getAddonInfo('path'))
+  path_resources = os.path.join(path, DIR_RESOURCES)
+  path_lib = os.path.join(path_resources, DIR_LIB)
+  sys.path.append(path_lib)
+
   import midi
 
-  midi_file_out = MidiFile()
+  midi_file_out = midi.MidiFile()
   midi_file_out.format = 0
   midi_file_out.ticksPerQuarterNote = 480
 
-  t0 = MidiTrack(0)
+  t0 = midi.MidiTrack(0)
   midi_file_out.tracks.append(t0)
 
   cnt = 0;
@@ -354,7 +360,7 @@ def buildFileMidi(infiles, files_dir):
       is_last = 1
     cnt = cnt + 1
 
-    midi_file_tmp = MidiFile()
+    midi_file_tmp = midi.MidiFile()
     midi_file_tmp.open(infile)
     midi_file_tmp.readEvents(is_first, is_last)
 
@@ -394,8 +400,10 @@ if first_run == 1:
 if res == 0:
   infiles = diceRoll(have_midi)
 
-  if have_midi == 1: buildFileMidi(infiles, files_dir)
-  else: outfile = buildFileWav(infiles, files_dir)
+  if have_midi == 1: 
+    outfile = buildFileMidi(infiles, files_dir)
+  else: 
+    outfile = buildFileWav(infiles, files_dir)
 
   xbmc.Player().play(outfile)
 
