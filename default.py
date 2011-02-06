@@ -39,7 +39,14 @@ MIDI_ZIP_FILENAME = "midi.zip"
 CHUNK_SIZE = 1048576
 
 OUTPUT_FILENAME_WAV = "waltz.wav"
-OUTPUT_FILENAME_MIDI = "waltz.mid"
+
+# Output file name for MIDI should, naturally, be "waltz.mid". 
+# However, XBMC 10.0 (Dharma) using ModplugCodec for .mid extenstion, but it seems to be buggy - strange additional sounds are heard.
+# For .kar (Karaoke files), XBMC uses built-in timidity which plays the MIDI files properly. 
+# Details: http://forum.xbmc.org/showthread.php?t=88790&highlight=soundfont
+# Therefore, as a workaround, we create the MIDI file with .kar extension.
+#OUTPUT_FILENAME_MIDI = "waltz.mid"
+OUTPUT_FILENAME_MIDI = "waltz.kar"
 
 # Obtain the full path of "userdata/add_ons" directory
 def getUserdataDir():
@@ -96,9 +103,11 @@ def cleanupOnCancel(path):
 
 # Check for MIDI support
 def checkMIDI():
-  path = xbmc.translatePath('special://xbmc/system/players/paplayer/timidity/timidity.cfg')
-  log(path)
-  if  os.path.exists(path): 
+  path1 = xbmc.translatePath('special://xbmc/system/players/paplayer/timidity/soundfont.sf2')
+  path2 = xbmc.translatePath('special://masterprofile/timidity/soundfont.sf2')
+  log(path1)
+  log(path2)
+  if os.path.exists(path1) or os.path.exists(path2): 
     log_notice("Using MIDI...")
     return 1
   log_notice("No MIDI support, reverting to WAV..."); 
