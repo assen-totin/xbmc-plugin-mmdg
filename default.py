@@ -331,7 +331,39 @@ def buildFileWav(infiles, files_dir):
 
 # Concat all MIDI files into one single MIDI file
 def buildFileMidi(infiles, files_dir):
+  import midi
+
+  midi_file_out = MidiFile()
+  midi_file_out.format = 0
+  midi_file_out.ticksPerQuarterNote = 480
+
+  t0 = MidiTrack(0)
+  midi_file_out.tracks.append(t0)
+
+  cnt = 0;
+  for infile in infiles:
+    is_first = 0
+    is_last = 0
+    if cnt == 0:
+      is_first = 1
+    elif cnt == 31:
+      is_last = 1
+    cnt = cnt + 1
+
+    midi_file_tmp = MidiFile()
+    midi_file_tmp.open(infile)
+    midi_file_tmp.readEvents(is_first, is_last)
+
+    for trk in midi_file_tmp.tracks:
+      for e in trk.events:
+        midi_file_out.tracks[0].events.append(e)
+
+    midi_file_tmp.close()
+
   outfile = os.path.join(files_dir,OUTPUT_FILENAME_MIDI)
+  midi_file_out.open(outfile, "wb")
+  midi_file_out.write()
+  midi_file_out.close()
   return outfile
 
 
@@ -343,6 +375,7 @@ def log(msg):
 # Log NOTICE
 def log_notice(msg):
   xbmc.output("### [%s] - %s" % (__addonname__,msg,),level=xbmc.LOGNOTICE )
+
 
 # MAIN
 have_midi = checkMIDI()
