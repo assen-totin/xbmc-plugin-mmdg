@@ -31,6 +31,8 @@ __author__      = "Assen Totin <assen.totin@gmail.com>"
 
 BASE_URL = 'ftp://ftp.cs.princeton.edu/pub/cs126/mozart/mozart.jar'
 WAV_ZIP_FILENAME = 'mozart.jar'
+DIR_RESOURCES = "resources"
+DIR_FILES = "files"
 MIDI_ZIP_FILENAME = "midi.zip"
 
 CHUNK_SIZE = 1048576
@@ -47,7 +49,9 @@ def getUserdataDir():
 # Obtain the full path to the MIDI ZIP file 
 def getMidiZipFileName():
   path = xbmc.translatePath(__settings__.getAddonInfo('path'))
-  midi_zip_filename = os.path.join(path, MIDI_ZIP_FILENAME)
+  path_resources = os.path.join(path, DIR_RESOURCES)
+  path_files = os.path.join(path_resources, DIR_FILES)
+  midi_zip_filename = os.path.join(path_files, MIDI_ZIP_FILENAME)
   return midi_zip_filename
 
 
