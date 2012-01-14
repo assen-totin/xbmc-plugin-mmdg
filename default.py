@@ -129,7 +129,7 @@ def unzipFile(path, filename):
   # Extract. On Python 2.6 and beterer, use the nice and cosy "extractall()" method
   try: myzip.extractall(path)
   except:
-    # On older Python versions (incl. current PPA builds of XBMC 10.0 for Ubuntu)!, there is no reasonable support for extracting ZIP files, only for creating ones (?!)
+    # On older Python versions (incl. PPA builds of XBMC 10.0 for Ubuntu!), there is no reasonable support for extracting ZIP files, only for creating ones (?!)
     # So, use Doug Tolton's idea from http://code.activestate.com/recipes/252508-file-unzip/
     myzip_dirs = []
     for dir_name in myzip.namelist():
@@ -325,7 +325,7 @@ def buildFileWav(infiles, files_dir):
   log(data[0][0])
   output.setparams(data[0][0])
 
-  # On older (buggy?) Python versions like XBMC's built-in 2.4 .writeframes() seems not to update the "nframes" fliend of the WAV header 
+  # On older (buggy?) Python versions like XBMC's built-in 2.4 .writeframes() seems not to update the "nframes" field of the WAV header 
   # and the resulting output file is a truncated mess. Therefore, force the nframes for the header and only write raw data. 
   #
   # To give developers even more fun, trying to manually build the full header on python 2.4 is an epic fail:
@@ -388,12 +388,12 @@ def buildFileMidi(infiles, files_dir):
 
 # Logging
 def log(msg):
-  xbmc.output("### [%s] - %s" % (__addonname__,msg,),level=xbmc.LOGDEBUG )
+  xbmc.log("### [%s] - %s" % (__addonname__,msg,),level=xbmc.LOGDEBUG )
 
 
 # Log NOTICE
 def log_notice(msg):
-  xbmc.output("### [%s] - %s" % (__addonname__,msg,),level=xbmc.LOGNOTICE )
+  xbmc.log("### [%s] - %s" % (__addonname__,msg,),level=xbmc.LOGNOTICE )
 
 
 # MAIN
